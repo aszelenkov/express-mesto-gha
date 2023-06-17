@@ -14,10 +14,6 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb')
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Обработка запроса PATCH по неправильному пути
-app.patch('*', (req, res) => {
-  res.status(404).json({ message: 'Запрашиваемый ресурс не найден' });
-});
 
 app.use((req, res, next) => {
   req.user = {
@@ -26,7 +22,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/', router);
+app.use(router);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
