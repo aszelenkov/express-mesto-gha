@@ -1,28 +1,24 @@
 const express = require('express');
+const config = require('./config');
+const mongoose = require('mongoose');
+const { errors } = require('celebrate');
+const router = require('./routes/index');
+const handleError = require('./middlewares/handleError');
 
 const app = express();
 
-const mongoose = require('mongoose');
-
-const router = require('./routes/index');
-
-const { PORT = 3000 } = process.env;
-
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb')
+mongoose.connect(config.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.log(err));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '648c71b2c87ce6467d05be56',
-  };
-  next();
-});
-
 app.use(router);
+app.use(errors());
+app.use(handleError);
+
+const PORT = config.PORT;
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);

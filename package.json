@@ -19,8 +19,14 @@
   },
   "homepage": "https://github.com/aszelenkov/express-mesto-gha#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "celebrate": "^15.0.1",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "mongoose": "^7.2.4"
+    "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.2.4",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

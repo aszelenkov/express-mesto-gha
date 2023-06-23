@@ -1,73 +1,55 @@
 const Card = require('../models/card');
 
-const {
-  STATUS_CREATED,
-  ERROR_BAD_REQUEST,
-  ERROR_NOT_FOUND,
-  ERROR_INTERNAL_SERVER,
-} = require('../utils/constants');
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
+const ForbiddenError = require('../errors/forbidden-err');
 
-module.exports.getCards = async (req, res) => {
+const { STATUS_CREATED, STATUS_OK } = require('../utils/constants');
+
+module.exports.getCards = async (req, res, next) => {
   try {
-    const cards = await Card
-      .find({})
-      .populate('owner');
-    res
-      .send({ data: cards });
+    const cards = await Card.find({}).populate('owner');
+    res.status(STATUS_OK).send({ data: cards });
   } catch (err) {
-    res
-      .status(ERROR_INTERNAL_SERVER)
-      .send({ message: 'На сервере произошла ошибка' });
+    next(err);
   }
 };
 
-module.exports.createCard = async (req, res) => {
+module.exports.createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
-    const card = await Card
-      .create({ name, link, owner: req.user._id });
-    res
-      .status(STATUS_CREATED)
-      .send({ data: card });
+    const card = await Card.create({ name, link, owner: req.user._id });
+    res.status(STATUS_CREATED).send({ data: card });
   } catch (err) {
     if (err.name === 'ValidationError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({ message: 'Переданы некорректные данные в методе создания карточки' });
+      next(new ValidationError('Переданы некорректные данные в методе создания карточки'));
     } else {
-      res
-        .status(ERROR_INTERNAL_SERVER)
-        .send({ message: 'На сервере произошла ошибка' });
+      next(err);
     }
   }
 };
 
-module.exports.deleteCard = async (req, res) => {
+module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card
-      .findByIdAndDelete(req.params.cardId);
+    const card = await Card.findById(req.params.cardId);
     if (!card) {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({ message: 'Карточка не найдена' });
-      return;
+      throw new NotFoundError('Карточка не найдена');
     }
-    res
-      .send({ data: card });
+    if (card.owner.toString() !== req.user._id) {
+      throw new ForbiddenError('Недостаточно прав для удаления карточки');
+    }
+    await Card.findByIdAndDelete(req.params.cardId);
+    res.status(STATUS_OK).send({ data: card });
   } catch (err) {
     if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({ message: 'Передан некорректные данные в методе удаления карточки' });
-      return;
+      next(new ValidationError('Переданы некорректные данные в методе удаления карточки'));
+    } else {
+      next(err);
     }
-    res
-      .status(ERROR_INTERNAL_SERVER)
-      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
-module.exports.likeCard = async (req, res) => {
+module.exports.likeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -75,27 +57,19 @@ module.exports.likeCard = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({ message: 'Карточка не найдена' });
-      return;
+      throw new NotFoundError('Карточка не найдена');
     }
-    res
-      .send({ data: card });
+    res.status(STATUS_OK).send({ data: card });
   } catch (err) {
     if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({ message: 'Передан некорректный _id карточки' });
-      return;
+      next(new ValidationError('Передан некорректный id карточки'));
+    } else {
+      next(err);
     }
-    res
-      .status(ERROR_INTERNAL_SERVER)
-      .send({ message: 'На сервере произошла ошибка' });
   }
 };
 
-module.exports.dislikeCard = async (req, res) => {
+module.exports.dislikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -103,22 +77,14 @@ module.exports.dislikeCard = async (req, res) => {
       { new: true },
     );
     if (!card) {
-      res
-        .status(ERROR_NOT_FOUND)
-        .send({ message: 'Карточка не найдена' });
-      return;
+      throw new NotFoundError('Карточка не найдена');
     }
-    res
-      .send({ data: card });
+    res.status(STATUS_OK).send({ data: card });
   } catch (err) {
     if (err.name === 'CastError') {
-      res
-        .status(ERROR_BAD_REQUEST)
-        .send({ message: 'Передан некорректный _id карточки' });
-      return;
+      next(new ValidationError('Передан некорректный id карточки'));
+    } else {
+      next(err);
     }
-    res
-      .status(ERROR_INTERNAL_SERVER)
-      .send({ message: 'На сервере произошла ошибка' });
   }
 };
