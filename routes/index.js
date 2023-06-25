@@ -10,8 +10,8 @@ router.post('/signup', validateSignUp, createUser);
 router.post('/signin', validateSignIn, login);
 router.use('/users', auth, routerUsers);
 router.use('/cards', auth, routerCards);
-router.use('/*', () => {
-  throw new NotFoundError('Запрашиваемый ресурс не найден');
+router.use('/*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 
 module.exports = router;
