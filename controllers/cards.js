@@ -31,14 +31,13 @@ module.exports.createCard = async (req, res, next) => {
 
 module.exports.deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findById(req.params.cardId);
+    const card = await Card.findOneAndDelete({ _id: req.params.cardId });
     if (!card) {
       throw new NotFoundError('Карточка не найдена');
     }
     if (card.owner.toString() !== req.user._id) {
       throw new ForbiddenError('Недостаточно прав для удаления карточки');
     }
-    await Card.findByIdAndDelete(req.params.cardId);
     res.status(STATUS_OK).send({ data: card });
   } catch (err) {
     if (err.name === 'CastError') {

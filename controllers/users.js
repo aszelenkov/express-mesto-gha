@@ -21,12 +21,12 @@ module.exports.getUserById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) {
-      throw new NotFoundError('Пользователь по указанному _id не найден');
+      throw new NotFoundError('Пользователь по указанному id не найден');
     }
     res.send({ data: user });
   } catch (err) {
     if (err.name === 'CastError') {
-      next(new ValidationError('Передан некорректный _id пользователя'));
+      next(new ValidationError('Передан некорректный id пользователя'));
     } else {
       next(err);
     }
