@@ -4,8 +4,6 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const ValidationError = require('../errors/validation-err');
 const ConflictingRequestError = require('../errors/conflicting-request-err');
-const UnauthorizedError = require('../errors/unauthorized-err');
-
 const { STATUS_CREATED } = require('../utils/constants');
 
 module.exports.getUsers = async (req, res, next) => {
