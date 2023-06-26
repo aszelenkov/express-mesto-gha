@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const ConflictingRequestError = require('../errors/conflicting-request-err');
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
 const handleMongooseErrors = require('../utils/handleMongooseErrors');
 const { findUserById, updateUser } = require('../utils/userFunctions');
 
@@ -18,10 +20,17 @@ module.exports.getUsers = async (req, res, next) => {
 
 module.exports.getUserById = async (req, res, next) => {
   try {
-    const user = await findUserById(req.params.userId);
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      throw new NotFoundError('Пользователь по указанному id не найден');
+    }
     res.send({ data: user });
   } catch (err) {
-    next(handleMongooseErrors(err));
+    if (err.name === 'CastError') {
+      next(new ValidationError('Передан некорректный id пользователя'));
+    } else {
+      next(err);
+    }
   }
 };
 
