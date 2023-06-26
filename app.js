@@ -6,7 +6,8 @@ const { errors } = require('celebrate');
 const router = require('./routes/index');
 const handleError = require('./middlewares/handleError');
 
-const { PORT, MONGO_URL } = require('./config');
+const { PORT = 3000 } = process.env;
+const { MONGO_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
 
